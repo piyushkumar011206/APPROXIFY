@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-beige: #f5f5dc;
+  --color-beige-dark: #e8e8c8;
+  --color-brown-50: #fdf8f6;
+  --color-brown-100: #f2e8e5;
+  --color-brown-200: #eaddd7;
+  --color-brown-300: #e0c1b3;
+  --color-brown-400: #d3a28e;
+  --color-brown-500: #8B4513;
+  --color-brown-600: #7a3d11;
+  --color-brown-700: #69350f;
+  --color-brown-800: #582d0d;
+  --color-brown-900: #47250b;
+}
+
+@layer base {
+  body {
+    @apply bg-beige text-slate-900 antialiased;
+    background-image: url('https://its.edu.in/images/its-engg-college.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+  }
+
+  /* Glassmorphism utility */
+  .glass {
+    @apply bg-white/60 backdrop-blur-md border border-white/20;
+  }
+
+  .shiny-brown {
+    @apply bg-linear-to-br from-[#8B4513]/80 via-[#A0522D]/70 to-[#D2691E]/80 backdrop-blur-xl border border-white/30 shadow-[0_0_20px_rgba(139,69,19,0.3)];
+  }
+}

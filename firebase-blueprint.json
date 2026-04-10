@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information including role and department.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "faculty", "hod"] },
+        "department": { "type": "string" },
+        "profilePhoto": { "type": "string" },
+        "bio": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "points": { "type": "number", "description": "Total points earned from approved activities." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ActivityRequest": {
+      "title": "Activity Request",
+      "description": "A request for participating in an activity or event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "eventName": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "duration": { "type": "number", "description": "Duration of the activity in days." },
+        "activityType": { "type": "string", "enum": ["Workshop", "Competition", "Conference", "Cultural", "Sports"] },
+        "budget": { "type": "number" },
+        "documents": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["pending_faculty", "pending_hod", "approved", "rejected"] },
+        "facultyId": { "type": "string" },
+        "hodId": { "type": "string" },
+        "facultyComment": { "type": "string" },
+        "hodComment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "eventName", "status", "createdAt"]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Verified achievement after event participation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "requestId": { "type": "string" },
+        "certificateUrl": { "type": "string" },
+        "result": { "type": "string" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "verifiedBy": { "type": "string" },
+        "verifiedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "requestId", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app notification for users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "message", "read", "createdAt"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "Official college events and announcements.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "type": { "type": "string", "enum": ["Workshop", "Competition", "Conference", "Cultural", "Sports"] },
+        "bannerUrl": { "type": "string" },
+        "registrationLink": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "date", "type", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/requests/{requestId}": {
+      "schema": "ActivityRequest",
+      "description": "Activity request documents."
+    },
+    "/achievements/{achievementId}": {
+      "schema": "Achievement",
+      "description": "Achievement records."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications."
+    },
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Public event announcements."
+    }
+  }
+}

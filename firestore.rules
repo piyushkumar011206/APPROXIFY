@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Fields: uid, email, displayName, role, department, profilePhoto, bio, skills
+    //
+    // Collection: requests
+    // Fields: id, studentId, studentName, eventName, description, date, budget, documents, status, facultyId, hodId, facultyComment, hodComment, createdAt
+    //
+    // Collection: achievements
+    // Fields: id, studentId, requestId, certificateUrl, result, photos, verifiedBy, verifiedAt, createdAt
+    //
+    // Collection: notifications
+    // Fields: id, userId, message, type, read, createdAt
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isFaculty() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty';
+    }
+
+    function isHOD() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'hod';
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Domain Validators
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'role', 'department', 'profilePhoto', 'bio', 'skills', 'updatedAt']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.displayName is string &&
+             data.role in ['student', 'faculty', 'hod'];
+    }
+
+    // User Rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    // Request Rules
+    match /requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        (resource.data.studentId == request.auth.uid && resource.data.status == 'pending_faculty') ||
+        isFaculty() || isHOD()
+      );
+      allow delete: if false;
+    }
+
+    // Achievement Rules
+    match /achievements/{achievementId} {
+      allow read: if isAuthenticated();
+      allow create: if isHOD();
+      allow update: if isHOD();
+      allow delete: if isHOD();
+    }
+
+    // Notification Rules
+    match /notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // Event Rules
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isFaculty() || isHOD();
+      allow update: if isFaculty() || isHOD();
+      allow delete: if isFaculty() || isHOD();
+    }
+  }
+}
